@@ -65,7 +65,7 @@ class Tools:
         """
         Search for a GIF on Giphy and embed it in the chat.
         :param query: The search term to find a GIF (e.g., 'funny cat').
-        :return: A status message indicating if the GIF was found.
+        :return: A markdown embed string to embed the gif in the chat.
         """
         if not self.valves.GIPHY_API_KEY:
             return "ERROR: GIPHY_API_KEY is not set in Valves configuration."
@@ -86,8 +86,9 @@ class Tools:
                     if not search_data['data']:
                         return f"ERROR: No GIFs found for query: {query}"
                     gif = search_data['data'][random.randint(0, len(search_data['data']) - 1)]
-                    await emit_status(__event_emitter__, f"Displaying gif from query: {query}", done=True)
-                    await emit_embed(gif, __event_emitter__)
-                    return f"Successfully found and displayed a GIF for '{query}'."
+                    await emit_status(__event_emitter__, f"Displaying gif from query: {query}")
+                    await emit_status(__event_emitter__, gif['url'], done=True)
+                    #await emit_embed(gif, __event_emitter__, done=True)
+                    return f"![from giphy]({gif['images']['original']['url']}) [via GIPHY]({gif['url']})"
         except Exception as e:
             return f"Error occurred while searching Giphy: {str(e)}"
