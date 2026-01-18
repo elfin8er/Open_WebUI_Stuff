@@ -10,7 +10,7 @@ requires: aiohttp, pydantic
 
 from typing import Optional, Any, Callable, Awaitable, Literal
 
-import random
+import json
 import aiohttp
 from pydantic import BaseModel, Field
 
@@ -45,7 +45,7 @@ class Tools:
     class UserValves(BaseModel):
         GIF_LANG: str = Field(
             default="en",
-            description="Language for search results",
+            description="Language(s) for search results (eg. 'en,fr')",
         )
         GIF_RATING: Literal["g", "pg", "pg-13", "r"] = Field(
             default="g",
@@ -62,9 +62,11 @@ class Tools:
         __user__: Optional[dict] = None,
     ):
         """
-        Search for a GIF on Giphy.
-        :param query: The search term to find a GIF (e.g., 'funny cat').
-        :return: A markdown embed string to embed the gif in the chat.
+        Search for GIFs on Giphy. When displaying a GIF, you MUST ALWAYS include the full markdown image and attribution.
+        :param query: The search term to find a GIF.
+        :return: A dictionary of GIFs to choose from. Each dict contains:
+            * title: The title of the GIF
+            * markdown: The markdown to display the GIF in the chat.
         """
         user_valves = self.UserValves.model_validate(__user__.get("valves", {}))
 
@@ -92,13 +94,16 @@ class Tools:
                     elif response.status != 200:
                         return f"Error: Giphy API returned status {response.status}"
 
-                    search_data = await response.json()
-                    # await emit_status(__event_emitter__, f"Got response: {search_data}")
-                    if not search_data["data"]:
+                    search_data = (await response.json())['data']
+                    await emit_status(__event_emitter__, f"Found {len(search_data)} GIFs from query: {query}", done=True)
+                    if not search_data:
                         return f"ERROR: No GIFs found for query: {query}"
-                    gif = search_data['data'][random.randint(0, len(search_data['data']) - 1)]
-                    await emit_status(__event_emitter__, f"Displaying gif from query: {query}")
-                    await emit_status(__event_emitter__, gif['url'], done=True)
-                    return f"![from giphy]({gif['images']['original']['url']}) [via GIPHY]({gif['url']})"
+                    output = []
+                    for gif in search_data:
+                        elem = {}
+                        elem['title'] = gif['title'] or "No title"
+                        elem['markdown'] = f"![giphy]({gif['images']['original']['url']}) [via GIPHY]({gif['url']})"
+                        output.append(elem)
+                    return json.dumps(output, indent=2)
         except Exception as e:
             return f"Error occurred while searching Giphy: {str(e)}"
