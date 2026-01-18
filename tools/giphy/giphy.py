@@ -102,6 +102,7 @@ class Tools:
                     for gif in search_data:
                         elem = {}
                         elem['title'] = gif['title'] or "No title"
+                        elem['description'] = gif['alt_text'] or "No description"
                         elem['markdown'] = f"![giphy]({gif['images']['original']['url']}) [via GIPHY]({gif['url']})"
                         output.append(elem)
                     return json.dumps(output, indent=2)
