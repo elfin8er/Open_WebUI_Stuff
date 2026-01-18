@@ -10,6 +10,7 @@ requires: aiohttp, pydantic
 
 from typing import Optional, Any, Callable, Awaitable, Literal
 
+import random
 import aiohttp
 from pydantic import BaseModel, Field
 
@@ -61,9 +62,9 @@ class Tools:
         __user__: Optional[dict] = None,
     ):
         """
-        Search for GIFs on Giphy. To display to the user, use Markdown syntax `![{alt}]({url})`.
-        :param query: The search terms to find GIFs for.
-        :return: GIFs to choose from.
+        Search for a GIF on Giphy.
+        :param query: The search term to find a GIF (e.g., 'funny cat').
+        :return: A markdown embed string to embed the gif in the chat.
         """
         user_valves = self.UserValves.model_validate(__user__.get("valves", {}))
 
@@ -95,14 +96,9 @@ class Tools:
                     # await emit_status(__event_emitter__, f"Got response: {search_data}")
                     if not search_data["data"]:
                         return f"ERROR: No GIFs found for query: {query}"
-
-                    return [
-                        {
-                            "description": (gif["alt_text"] or f'{gif["title"]} {gif["slug"]}'),
-                            "url": (gif["images"]["original"].get("webp", None) or gif["images"]["original"]["url"]),
-                        }
-                        for gif in search_data["data"]
-                    ]
-
+                    gif = search_data['data'][random.randint(0, len(search_data['data']) - 1)]
+                    await emit_status(__event_emitter__, f"Displaying gif from query: {query}")
+                    await emit_status(__event_emitter__, gif['url'], done=True)
+                    return f"![from giphy]({gif['images']['original']['url']}) [via GIPHY]({gif['url']})"
         except Exception as e:
             return f"Error occurred while searching Giphy: {str(e)}"
