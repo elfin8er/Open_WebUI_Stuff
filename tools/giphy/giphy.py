@@ -66,6 +66,7 @@ class Tools:
         :param query: The search term to find a GIF.
         :return: A dictionary of GIFs to choose from. Each dict contains:
             * title: The title of the GIF
+            * description: The alt text/description of the GIF
             * markdown: The markdown to display the GIF in the chat.
         """
         user_valves = self.UserValves.model_validate(__user__.get("valves", {}))
