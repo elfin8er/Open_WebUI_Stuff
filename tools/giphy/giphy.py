@@ -1,7 +1,7 @@
 """
 title: Giphy Search and Embed Tool
 description: Search Giphy for GIFs and display them in the chat
-version: 1.0.0
+version: 1.0.1
 author: elfin8er
 author_site: https://github.com/elfin8er/Open_WebUI_Stuff
 git_url: https://github.com/elfin8er/Open_WebUI_Stuff.git
