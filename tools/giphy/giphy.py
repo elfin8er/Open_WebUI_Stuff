@@ -45,6 +45,18 @@ class Tools:
             default="https://api.giphy.com/v1",
             description="Base URL for Giphy API",
         )
+        GIF_LIMIT: int = Field(
+            default=6,
+            description="Number of GIFs to retrieve per search",
+        )
+        GIF_RATING: str = Field(
+            default="g",
+            description="Content rating for GIFs (e.g., g, pg, pg-13, r)",
+        )
+        GIF_LANG: str = Field(
+            default="en",
+            description="Language for search results",
+        )
 
     def __init__(self):
         self.valves = self.Valves()
@@ -59,7 +71,7 @@ class Tools:
         if not query:
             return "ERROR: No search query provided."
         await emit_status(__event_emitter__, f"Searching Giphy for: {query}")
-        url = f"{self.valves.API_BASE_URL}/gifs/search?api_key={self.valves.GIPHY_API_KEY}&q={query}&limit=6&offset=0&rating=g&lang=en"
+        url = f"{self.valves.API_BASE_URL}/gifs/search?api_key={self.valves.GIPHY_API_KEY}&q={query}&limit={self.valves.GIF_LIMIT}&offset=0&rating={self.valves.GIF_RATING}&lang={self.valves.GIF_LANG}"
         
         try:
             async with aiohttp.ClientSession() as session:
